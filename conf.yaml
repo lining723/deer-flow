@@ -1,0 +1,9 @@
+# [!NOTE]
+# Read the `docs/configuration_guide.md` carefully, and update the configurations to match your specific settings and requirements.
+# - Replace `api_key` with your own credentials
+# - Replace `base_url` and `model` name if you want to use a custom model
+
+BASIC_MODEL:
+  base_url: https://ark.cn-beijing.volces.com/api/v3
+  model: "ep-20260225155623-ghqwj"
+  api_key: "b69be7c5-4ade-4554-8dca-847623538cf2"

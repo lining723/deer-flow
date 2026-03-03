@@ -1,0 +1,71 @@
+Stopping existing services if any...
+Cleaning up sandbox containers with prefix: deer-flow-sandbox
+Checking Docker containers... [0;32mnone found[0m
+Apple Container not found, skipping...
+[0;32m✓ Container cleanup complete[0m
+
+==========================================
+  Starting DeerFlow Development Server
+==========================================
+
+Services starting up...
+  → Backend: LangGraph + Gateway
+  → Frontend: Next.js
+  → Nginx: Reverse Proxy
+
+Starting LangGraph server...
+✓ LangGraph server started on localhost:2024
+Starting Gateway API...
+cd backend && uv run uvicorn src.gateway.app:app --host 0.0.0.0 --port 8001 > ../logs/gateway.log 2>&1 &
+sleep 3;
+# Skip Gateway API check to avoid lsof issues
+echo "✓ Gateway API started on localhost:8001 (check skipped)"; \
+	echo "Starting Frontend..."; \
+	cd frontend && pnpm run dev > ../logs/frontend.log 2>&1 & \
+	sleep 3; \
+	echo "✓ Frontend started on localhost:3000"; \
+	echo "Starting Nginx reverse proxy..."; \
+	mkdir -p logs && nginx -g 'daemon off;' -c /Users/bytedance/deer-flow/docker/nginx/nginx.local.conf -p /Users/bytedance/deer-flow > logs/nginx.log 2>&1 & \
+	sleep 2; \
+	echo "✓ Nginx started on localhost:2026"; \
+	echo ""; \
+	echo "=========================================="; \
+	echo "  DeerFlow is ready!"; \
+	echo "=========================================="; \
+	echo ""; \
+	echo "  🌐 Application: http://localhost:2026"; \
+	echo "  📡 API Gateway: http://localhost:2026/api/*"; \
+	echo "  🤖 LangGraph:   http://localhost:2026/api/langgraph/*"; \
+	echo ""; \
+	echo "  📋 Logs:"; \
+	echo "     - LangGraph: logs/langgraph.log"; \
+	echo "     - Gateway:   logs/gateway.log"; \
+	echo "     - Frontend:  logs/frontend.log"; \
+	echo "     - Nginx:     logs/nginx.log"; \
+	echo ""; \
+	echo "Press Ctrl+C to stop all services"; \
+	echo ""; \
+	wait
+✓ Gateway API started on localhost:8001 (check skipped)
+Starting Frontend...
+✓ Frontend started on localhost:3000
+Starting Nginx reverse proxy...
+✓ Nginx started on localhost:2026
+
+==========================================
+  DeerFlow is ready!
+==========================================
+
+  🌐 Application: http://localhost:2026
+  📡 API Gateway: http://localhost:2026/api/*
+  🤖 LangGraph:   http://localhost:2026/api/langgraph/*
+
+  📋 Logs:
+     - LangGraph: logs/langgraph.log
+     - Gateway:   logs/gateway.log
+     - Frontend:  logs/frontend.log
+     - Nginx:     logs/nginx.log
+
+Press Ctrl+C to stop all services
+
+/bin/sh: line 1: 75823 Killed: 9               nginx -g 'daemon off;' -c /Users/bytedance/deer-flow/docker/nginx/nginx.local.conf -p /Users/bytedance/deer-flow > logs/nginx.log 2>&1
