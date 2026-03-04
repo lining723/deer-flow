@@ -24,5 +24,8 @@ def web_fetch_tool(url: str) -> str:
     if config is not None and "timeout" in config.model_extra:
         timeout = config.model_extra.get("timeout")
     html_content = jina_client.crawl(url, return_format="html", timeout=timeout)
-    article = readability_extractor.extract_article(html_content)
-    return article.to_markdown()[:4096]
+    try:
+        article = readability_extractor.extract_article(html_content)
+        return article.to_markdown()[:4096]
+    except Exception:
+        return str(html_content)[:4096]

@@ -53,7 +53,25 @@ class Article:
 
 class ReadabilityExtractor:
     def extract_article(self, html: str) -> Article:
-        article = simple_json_from_html_string(html, use_readability=True)
+        try:
+            article = simple_json_from_html_string(html, use_readability=True)
+        except Exception:
+            try:
+                article = simple_json_from_html_string(html, use_readability=False)
+            except Exception:
+                title_match = re.search(
+                    r"<title[^>]*>(.*?)</title>",
+                    html or "",
+                    flags=re.IGNORECASE | re.DOTALL,
+                )
+                title = title_match.group(1).strip() if title_match else "Untitled"
+                title = re.sub(r"\s+", " ", title) or "Untitled"
+
+                html_content = html
+                if html_content is None or not str(html_content).strip():
+                    html_content = "No content could be extracted from this page"
+
+                return Article(title=title, html_content=html_content)
 
         html_content = article.get("content")
         if not html_content or not str(html_content).strip():
