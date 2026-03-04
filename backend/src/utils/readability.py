@@ -1,8 +1,12 @@
+import logging
 import re
+import subprocess
 from urllib.parse import urljoin
 
 from markdownify import markdownify as md
 from readabilipy import simple_json_from_html_string
+
+logger = logging.getLogger(__name__)
 
 
 class Article:
@@ -55,23 +59,18 @@ class ReadabilityExtractor:
     def extract_article(self, html: str) -> Article:
         try:
             article = simple_json_from_html_string(html, use_readability=True)
-        except Exception:
-            try:
-                article = simple_json_from_html_string(html, use_readability=False)
-            except Exception:
-                title_match = re.search(
-                    r"<title[^>]*>(.*?)</title>",
-                    html or "",
-                    flags=re.IGNORECASE | re.DOTALL,
-                )
-                title = title_match.group(1).strip() if title_match else "Untitled"
-                title = re.sub(r"\s+", " ", title) or "Untitled"
-
-                html_content = html
-                if html_content is None or not str(html_content).strip():
-                    html_content = "No content could be extracted from this page"
-
-                return Article(title=title, html_content=html_content)
+        except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+            stderr = getattr(exc, "stderr", None)
+            if isinstance(stderr, bytes):
+                stderr = stderr.decode(errors="replace")
+            stderr_info = f"; stderr={stderr.strip()}" if isinstance(stderr, str) and stderr.strip() else ""
+            logger.warning(
+                "Readability.js extraction failed with %s%s; falling back to pure-Python extraction",
+                type(exc).__name__,
+                stderr_info,
+                exc_info=True,
+            )
+            article = simple_json_from_html_string(html, use_readability=False)
 
         html_content = article.get("content")
         if not html_content or not str(html_content).strip():
